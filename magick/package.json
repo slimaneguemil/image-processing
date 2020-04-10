@@ -1,0 +1,22 @@
+{
+  "name": "sharp-wipo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "async": "^3.2.0",
+    "body-parser": "^1.19.0",
+    "chalk": "1.1.3",
+    "debug": "^4.1.1",
+    "express": "^4.17.1",
+    "express-fileupload": "^1.1.7-alpha.2",
+    "gm": "^1.23.1",
+    "morgan": "^1.10.0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
