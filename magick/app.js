@@ -131,26 +131,27 @@ app.post('/resize', fileUpload(), checkFile,async function(req, res) {
     req.my_params = {
         width : req.query.width ? parseInt(req.query.width) : null,
         height : req.query.height ? parseInt(req.query.height) : null,
-        resolution : req.query.resolution ? parseInt(req.query.resolution) : null
-        };
+        resolution : req.query.resolution ? parseInt(req.query.resolution) : null,
+        format : req.query.format ? req.query.format : null
+
+    };
    // The name of the input field (i.e. "sampleFile") is used to retrieve the uploaded file
     let sampleFile = req.files.sampleFile.data;
     async.waterfall([
             function intro(next) {
                 next(null, sampleFile, req,res);
             },
-            layerFormat,
             layerResize,
             layerDensity,
+            layerFormat,
+            getFormat,
             layerEnd
         ], function (err) {
             if (err) {
-                console.error(
-                    '/setresolution Unable to resize '
-                );
+                console.error('/setresolution Unable to resize ');
+                return res.status(400).send('Unable to resize.');
             } else {
                 console.log('/setresolution Successfully resized '  );
-
             }
 
             //  callback(null, "message");
@@ -179,15 +180,14 @@ function setdensity(sampleFile, resolution, next) {
             }
         });
 }
-function layerFormat( sampleFile, req, res, next) {
-    debug('/apply layerFormat ');
+function getFormat( sampleFile, req, res, next) {
+    debug('/getFormat ');
     gm(sampleFile).format(function (err, format) {
         //debug(`getFormat: ${format}`);
         if (err) {next(err);} else {
             res.set('Content-Type', `image/${format.toLowerCase()}`);
             next(null, sampleFile, req, res);
         }
-
     });
 }
 function layerResize(sampleFile, req, res, next) {
@@ -224,6 +224,26 @@ function layerDensity(sampleFile, req, res, next) {
                 }
             });
     }
+}
+function layerFormat( sampleFile, req, res, next) {
+    debug(`/layerDensity values resolution ${req.my_params.resolution}`);
+    if(!req.my_params.format) {
+        debug('/layerFormat skipped');
+        next(null, sampleFile, req, res);
+    }
+    else {
+        debug('/layerFormat applied ');
+        gm(sampleFile)
+            .setFormat(req.my_params.format)
+            .toBuffer(function (err, buffer) {
+                if (err) {
+                    next(err);
+                } else {
+                    next(null, buffer, req, res);
+                }
+            });
+    }
+
 }
 function layerEnd(sampleFile, req, res, next) {
     debug(`/layerEnd`);
