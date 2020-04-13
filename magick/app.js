@@ -160,6 +160,36 @@ app.post('/resize', fileUpload(), checkFile,async function(req, res) {
 
 });
 
+app.post('/modulate', fileUpload(),async function(req, res) {
+    req.my_params = {
+        width : req.query.width ? parseInt(req.query.width) : null,
+        height : req.query.height ? parseInt(req.query.height) : null,
+        resolution : req.query.resolution ? parseInt(req.query.resolution) : null,
+        format : req.query.format ? req.query.format : null
+
+    };
+    // The name of the input field (i.e. "sampleFile") is used to retrieve the uploaded file
+    let sampleFile = req.files.sampleFile.data;
+    async.waterfall([
+            function intro(next) {
+                next(null, sampleFile, req,res);
+            },
+            modulate,
+            layerEnd
+        ], function (err) {
+            if (err) {
+                console.error('/modulateUnable to resize ');
+                return res.status(400).send('Unable to resize.');
+            } else {
+                console.log('/modulate Successfully resized '  );
+            }
+
+            //  callback(null, "message");
+        }
+    );
+
+});
+
 // middlewares appications
 function checkFile(req,res,next){
     if (!req.files || Object.keys(req.files).length === 0) {
@@ -255,6 +285,20 @@ function layerEnd(sampleFile, req, res, next) {
                 stdout.pipe(res)
             }
         });
+}
+
+function modulate(sampleFile, req, res, next) {
+        debug('/modulate applied');
+        gm(sampleFile)
+            .modulate(100,0)
+            .toBuffer(function (err, buffer) {
+                if (err) {
+                    next(err);
+                } else {
+                    next(null, buffer, req, res);
+                }
+            });
+
 }
 
 // middlewares operational
